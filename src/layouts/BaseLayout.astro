@@ -1,0 +1,86 @@
+---
+// Base page layout: <head>, header, footer, page transitions, scroll reveal.
+// No personal content here; name/links come from src/data/profile.yml.
+import { ClientRouter } from 'astro:transitions';
+import { getEntry } from 'astro:content';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const profile = await getEntry('profile', 'me');
+if (!profile) throw new Error('Missing src/data/profile.yml entry "me"');
+const me = profile.data;
+
+const { title, description = `${me.name} - ${me.tagline}` } = Astro.props;
+const pageTitle = title ? `${title} | ${me.name}` : me.name;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <script is:inline>
+      // Apply saved theme before paint (and again after each page swap).
+      (function () {
+        function applyTheme() {
+          var root = document.documentElement;
+          root.classList.remove('no-js');
+          try {
+            var t = localStorage.getItem('theme');
+            if (t === 'light' || t === 'dark') root.setAttribute('data-theme', t);
+          } catch (e) {}
+        }
+        applyTheme();
+        document.addEventListener('astro:after-swap', applyTheme);
+      })();
+    </script>
+    <ClientRouter />
+  </head>
+  <body>
+    <a class="sr-only" href="#main">Skip to content</a>
+    <Header name={me.name} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer name={me.name} links={me.links} email={me.email} />
+
+    <script>
+      // Scroll reveal for [data-reveal] elements. Re-runs after each page transition.
+      function initReveal() {
+        const els = document.querySelectorAll<HTMLElement>('[data-reveal]:not(.is-visible)');
+        if (!('IntersectionObserver' in window)) {
+          els.forEach((el) => el.classList.add('is-visible'));
+          return;
+        }
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+        );
+        els.forEach((el) => io.observe(el));
+      }
+      document.addEventListener('astro:page-load', initReveal);
+    </script>
+  </body>
+</html>

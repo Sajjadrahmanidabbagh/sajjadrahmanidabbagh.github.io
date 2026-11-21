@@ -1,0 +1,62 @@
+---
+// Site footer. Content comes from props (profile.yml).
+interface Props {
+  name: string;
+  email?: string;
+  links: { label: string; url: string }[];
+}
+const { name, email, links } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container inner">
+    <p class="muted">© {year} {name}</p>
+    <ul>
+      {email && <li><a href={`mailto:${email}`}>Email</a></li>}
+      {
+        links.map((l) => (
+          <li>
+            <a href={l.url} target="_blank" rel="noopener noreferrer">
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--line);
+    margin-top: var(--space-section);
+    padding-block: 2.5rem;
+    font-size: 0.92rem;
+  }
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .inner p {
+    margin: 0;
+  }
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  a {
+    text-decoration: none;
+    color: var(--muted);
+  }
+  a:hover {
+    color: var(--accent);
+  }
+</style>

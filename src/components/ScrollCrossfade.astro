@@ -1,0 +1,154 @@
+---
+// Scroll-driven image crossfade: a sticky image stage; as each text step scrolls into view,
+// its image slowly fades in while the previous one fades out.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Item {
+  title: string;
+  text: string;
+  image: ImageMetadata;
+  imageAlt: string;
+  href?: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+
+<section class="xfade" data-xfade>
+  <div class="stage" aria-hidden="true">
+    {
+      items.map((it, i) => (
+        <div class={`frame${i === 0 ? ' active' : ''}`} data-frame={i}>
+          <Image src={it.image} alt="" widths={[640, 1000, 1600]} sizes="(max-width: 860px) 100vw, 55vw" />
+        </div>
+      ))
+    }
+  </div>
+  <div class="steps">
+    {
+      items.map((it, i) => (
+        <article class={`step${i === 0 ? ' active' : ''}`} data-step={i}>
+          <span class="eyebrow">{String(i + 1).padStart(2, '0')}</span>
+          <h2>{it.title}</h2>
+          <p class="lead">{it.text}</p>
+          <span class="sr-only">{it.imageAlt}</span>
+          {it.href && (
+            <a class="btn" href={it.href}>
+              Learn more <span aria-hidden="true">→</span>
+            </a>
+          )}
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  function initCrossfade() {
+    document.querySelectorAll<HTMLElement>('[data-xfade]:not([data-bound])').forEach((root) => {
+      root.dataset.bound = '1';
+      const frames = root.querySelectorAll<HTMLElement>('[data-frame]');
+      const steps = root.querySelectorAll<HTMLElement>('[data-step]');
+      const setActive = (i: number) => {
+        frames.forEach((f, j) => f.classList.toggle('active', i === j));
+        steps.forEach((s, j) => s.classList.toggle('active', i === j));
+      };
+      if (!('IntersectionObserver' in window)) return;
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.step));
+          }
+        },
+        // A thin band around the middle of the viewport decides the active step.
+        { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
+      );
+      steps.forEach((s) => io.observe(s));
+    });
+  }
+  document.addEventListener('astro:page-load', initCrossfade);
+</script>
+
+<style>
+  .xfade {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: clamp(32px, 6vw, 96px);
+    max-width: calc(var(--maxw) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .stage {
+    position: sticky;
+    top: 92px;
+    height: calc(100vh - 124px);
+    min-height: 420px;
+    border-radius: calc(var(--radius) + 6px);
+    overflow: hidden;
+    background: var(--accent-soft);
+  }
+
+  .frame {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(1.08);
+    transition: opacity 1.4s var(--ease), transform 2.4s var(--ease);
+  }
+
+  .frame.active {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .frame :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .step {
+    min-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    opacity: 0.25;
+    transition: opacity 0.8s var(--ease);
+  }
+
+  .step.active {
+    opacity: 1;
+  }
+
+  .step .btn {
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 860px) {
+    .xfade {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .stage {
+      top: 76px;
+      height: 46vh;
+      min-height: 260px;
+      z-index: 1;
+    }
+    .step {
+      min-height: 70vh;
+      padding-top: 2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .step {
+      opacity: 1;
+    }
+  }
+</style>

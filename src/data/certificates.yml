@@ -1,0 +1,16 @@
+# Certificates, newest first.
+- id: dl-spec
+  title: Deep Learning Specialization - Online Course by Stanford University
+  org: Coursera
+  period: "2024"
+  details: Able to develop neural networks, regression, and classification models
+- id: python-spec
+  title: Python Programming Specialization - Online Course by Michigan University
+  org: Coursera
+  period: "2023"
+  details: Able to code using the Python programming language
+- id: ml-course
+  title: Machine Learning - Online Course by Stanford University
+  org: Self-educated
+  period: "2022"
+  details: Able to develop regression and classification models

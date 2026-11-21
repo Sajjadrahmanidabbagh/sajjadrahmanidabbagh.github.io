@@ -1,0 +1,7 @@
+# Skill groups.
+- id: programming
+  group: Programming
+  items: [Python, MATLAB, Deep Learning, Multi-task Learning, Graph Transformers, CNNs, Diffusion Models, "Dimensionality Reduction (PCA, UMAP)", Hyperspectral Bioimage Analysis]
+- id: simulation
+  group: Simulation and Modeling
+  items: [ANSYS, COMSOL, Microfluidics, Fluid Mechanics, LabVIEW]

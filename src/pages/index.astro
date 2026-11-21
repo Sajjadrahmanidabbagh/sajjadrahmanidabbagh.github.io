@@ -1,0 +1,113 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ScrollCrossfade from '../components/ScrollCrossfade.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import NewsList from '../components/NewsList.astro';
+
+const me = (await getEntry('profile', 'me'))!.data;
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const news = (await getCollection('news'))
+  .sort((a, b) => b.data.year - a.data.year || a.data.order - b.data.order)
+  .slice(0, 3);
+---
+
+<BaseLayout>
+  <section class="hero container">
+    <div class="hero-text">
+      <span class="eyebrow" data-reveal>{me.title} · {me.location}</span>
+      <h1 data-reveal style="--reveal-delay:80ms">{me.name}</h1>
+      <p class="tagline" data-reveal style="--reveal-delay:160ms">{me.tagline}</p>
+      <p class="lead" data-reveal style="--reveal-delay:240ms">{me.intro}</p>
+      <div class="actions" data-reveal style="--reveal-delay:320ms">
+        <a class="btn btn-primary" href="/research/">Research</a>
+        <a class="btn" href="/projects/">Projects</a>
+        <a class="btn" href="/contact/">Contact</a>
+      </div>
+    </div>
+    <div class="hero-media" data-reveal style="--reveal-delay:120ms">
+      <Image
+        src={me.photo}
+        alt={me.photoAlt}
+        widths={[480, 800, 1200]}
+        sizes="(max-width: 860px) 100vw, 42vw"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
+  </section>
+
+  {me.highlights.length > 0 && <div class="section"><ScrollCrossfade items={me.highlights} /></div>}
+
+  <section class="section container">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">Projects</span>
+      <h2>Selected work</h2>
+    </div>
+    <div class="grid">
+      {projects.map((p, i) => <ProjectCard project={p} index={i} />)}
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">News</span>
+      <h2>Latest updates</h2>
+    </div>
+    <NewsList items={news} />
+    <p data-reveal><a class="btn" href="/news/">All news <span aria-hidden="true">→</span></a></p>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: clamp(32px, 6vw, 96px);
+    align-items: center;
+    min-height: calc(100vh - 68px);
+    padding-block: clamp(48px, 8vw, 96px);
+  }
+  .tagline {
+    font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+  .hero-media {
+    border-radius: calc(var(--radius) + 8px);
+    overflow: hidden;
+    aspect-ratio: 4 / 5;
+    box-shadow: var(--shadow);
+  }
+  .hero-media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .section-head {
+    margin-bottom: 2.5rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 1.5rem;
+  }
+  @media (max-width: 860px) {
+    .hero {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+    .hero-media {
+      order: -1;
+      aspect-ratio: 1 / 1;
+      max-width: 420px;
+    }
+  }
+</style>

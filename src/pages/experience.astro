@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EntryList from '../components/EntryList.astro';
+
+const experience = (await getCollection('experience')).map((e) => e.data);
+const awards = (await getCollection('awards')).map((e) => e.data);
+const certificates = (await getCollection('certificates')).map((e) => e.data);
+---
+
+<BaseLayout title="Experience" description="Work experience, teaching, honors and certificates.">
+  <header class="page-header container">
+    <span class="eyebrow" data-reveal>Experience</span>
+    <h1 data-reveal style="--reveal-delay:80ms">Work, teaching & awards</h1>
+  </header>
+
+  <section class="container">
+    <h2 data-reveal>Work experience</h2>
+    <EntryList items={experience} />
+  </section>
+
+  <section class="section container">
+    <h2 data-reveal>Honors & awards</h2>
+    <EntryList items={awards} />
+  </section>
+
+  <section class="container">
+    <h2 data-reveal>Certificates</h2>
+    <EntryList items={certificates} />
+  </section>
+</BaseLayout>

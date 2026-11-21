@@ -1,0 +1,26 @@
+# Publications. Set selected: true to show on the home page.
+# TODO: add year and url (DOI link) for each publication; add the full list if wanted.
+- id: ml-extrusion-3d-printing
+  title: Machine learning-enabled optimization of extrusion-based 3D printing
+  authors: [S. R. Dabbagh, O. Ozcan, S. Tasoglu]
+  venue: Methods
+  publisher: Elsevier
+  selected: true
+- id: 3d-printed-microrobots
+  title: 3D-printed microrobots from design to translation
+  authors: [S. R. Dabbagh, M. R. Sarabi, M. T. Birtek, S. Seyfi, M. Sitti, S. Tasoglu]
+  venue: Nature Communications
+  publisher: Nature
+  selected: true
+- id: dl-bioimage-analysis
+  title: Deep learning-enabled technologies for bioimage analysis
+  authors: [F. Rabbi, S. R. Dabbagh, P. Angin, A. K. Yetisen, S. Tasoglu]
+  venue: Micromachines
+  publisher: MDPI
+  selected: true
+- id: 3d-bioprinted-organ-on-chips
+  title: 3D-bioprinted organ-on-chips
+  authors: [S. R. Dabbagh, M. R. Sarabi, M. T. Birtek, N. Mustafaoglu, Yu S. Zhang, S. Tasoglu]
+  venue: Aggregate
+  publisher: Wiley
+  selected: true

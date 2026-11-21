@@ -1,0 +1,24 @@
+# Education, newest first. Fields: id, title, org, location, period, details.
+- id: uu-researcher
+  title: Researcher (eSSENCE Research Program)
+  org: Uppsala University - Image Analysis Division & Biomedical Center (BMC)
+  location: Uppsala, Sweden
+  period: 2025 - Present
+- id: mpi-internship
+  title: Internship
+  org: Max Planck Institute for Intelligent Systems
+  location: Stuttgart, Germany
+  details: "Advisor: Prof. Dr. Metin Sitti"
+  # TODO: add period (dates missing in CV)
+- id: msc-koc
+  title: M.Sc. in Design and Technology
+  org: Koc University
+  location: Istanbul, Turkey
+  details: "Overall GPA: 4/4 - Advisor: Prof. Dr. Savas Tasoglu"
+  # TODO: add period (dates missing in CV)
+- id: bsc-tabriz
+  title: B.Sc. in Mechanical Engineering
+  org: University of Tabriz (TBZU)
+  location: Tabriz, Iran
+  details: "GPA: 3.33/4"
+  # TODO: add period (dates missing in CV)

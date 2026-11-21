@@ -1,0 +1,76 @@
+---
+// Lightweight YouTube embed: shows a thumbnail and loads the player only on click.
+interface Props {
+  id: string;
+  title: string;
+}
+const { id, title } = Astro.props;
+const thumb = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+---
+
+<div class="yt" data-yt-id={id} data-yt-title={title}>
+  <button type="button" class="yt-play" aria-label={`Play video: ${title}`}>
+    <img src={thumb} alt="" loading="lazy" decoding="async" />
+    <span class="icon" aria-hidden="true">
+      <svg viewBox="0 0 68 48" width="68" height="48"><path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.3 34 .3 34 .3s-21.2 0-26.5 1.4a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6C12.8 47.7 34 47.7 34 47.7s21.2 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3z" fill="#f00"></path><path d="M45 24 27 14v20z" fill="#fff"></path></svg>
+    </span>
+  </button>
+</div>
+
+<script>
+  function initYouTube() {
+    document.querySelectorAll<HTMLElement>('.yt:not([data-bound])').forEach((el) => {
+      el.dataset.bound = '1';
+      el.querySelector('button')?.addEventListener('click', () => {
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${el.dataset.ytId}?autoplay=1`;
+        iframe.title = el.dataset.ytTitle || 'YouTube video';
+        iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        el.replaceChildren(iframe);
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', initYouTube);
+</script>
+
+<style>
+  .yt {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #000;
+  }
+  .yt-play {
+    all: unset;
+    cursor: pointer;
+    position: absolute;
+    inset: 0;
+  }
+  .yt-play img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .icon {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    opacity: 0.9;
+    transition: opacity 0.2s, transform 0.3s var(--ease);
+  }
+  .yt-play:hover .icon,
+  .yt-play:focus-visible .icon {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  .yt :global(iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>

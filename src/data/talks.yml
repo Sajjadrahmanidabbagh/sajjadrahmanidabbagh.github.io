@@ -1,0 +1,19 @@
+# Conference talks and posters, newest first.
+- id: nordic-metabolomics-2026
+  event: 5th Nordic Metabolomics Conference
+  place: Uppsala University, Sweden
+  year: 2026
+  type: Poster
+  title: "A Platform for Spatial Metabolomics: from Raw Mass Spectra to Targeted and Untargeted Analysis"
+- id: ssba-2026
+  event: Swedish Symposium on Image Analysis (SSBA)
+  place: Örebro University, Sweden
+  year: 2026
+  type: Presentation
+  title: Learning-Based Task-Specific Feature Extraction from Mass Spectrometry Imaging Data
+- id: essence-2025
+  event: E-Science Academy (eSSENCE) Conference
+  place: Umeå University, Sweden
+  year: 2025
+  type: Poster
+  title: Dimensionality Reduction for Untargeted Analysis of Mass Spectrometry Imaging (MSI) Data

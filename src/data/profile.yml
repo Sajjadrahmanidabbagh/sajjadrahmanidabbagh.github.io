@@ -1,0 +1,65 @@
+# Your personal info. Edit this file to change name, bio, links, and home-page highlights.
+# Image paths are relative to this file.
+- id: me
+  name: Sajjad Rahmani Dabbagh
+  title: Researcher
+  tagline: Biomedical image analysis & artificial intelligence
+  affiliation: Image Analysis Division & Biomedical Center (BMC), Uppsala University
+  location: Uppsala, Sweden
+  email: sajjad.rahmani.d@gmail.com
+  # Phone number intentionally not published.
+  links:
+    - label: GitHub
+      url: https://github.com/Sajjadrahmanidabbagh
+    - label: Google Scholar
+      url: https://scholar.google.com/citations?hl=en&user=2ChYbTIAAAAJ
+    # TODO: add LinkedIn / ORCID / YouTube links if you want them shown.
+  intro: >-
+    My expertise lies at the intersection of biomedical image analysis and artificial
+    intelligence (AI). I apply deep learning to biological datasets, such as mass spectrometry
+    imaging (MSI) and histopathological whole slide images (WSI), to facilitate clinical
+    translation and pathway analysis.
+  summary: >-
+    My expertise lies at the intersection of biomedical image analysis and artificial intelligence (AI).
+    I have experience applying deep learning algorithms to biological datasets, such as mass spectrometry
+    imaging (MSI) and histopathological whole slide images (WSI), to facilitate clinical translation and
+    pathway analysis. My research leveraged architectures such as variational autoencoders and multi-task
+    graph transformers to optimize label-free tissue segmentation, simultaneous cancer detection, and
+    disease staging across molecular and cellular levels. To facilitate multidisciplinary approaches in
+    applied biomedical research, I developed plug-and-play MATLAB graphical user interfaces (e.g., i2i 2.0)
+    that deploy complex image registration, CNNs, and dimensionality reduction tools for end-users. This
+    computational expertise is reinforced by peer-reviewed publications, the supervision of Master's
+    thesis projects, and teaching assistantships in B.Sc./M.Sc. courses.
+  interests:
+    - Reading personal development books, writing fiction
+    - Hiking, fitness, football, table tennis
+    - Exploring emerging technologies, hardware devices, and novel AI models
+    - Restoring, renovating, and repairing older items
+  photo: ../assets/images/portrait.jpg
+  photoAlt: Portrait of Sajjad Rahmani Dabbagh
+  aboutImage: ../assets/images/talk.jpg
+  aboutImageAlt: Sajjad Rahmani Dabbagh giving a talk at an eSSENCE event at Uppsala University
+  # Home-page scroll section: each item fades its image in as you scroll.
+  # TODO: these texts are placeholders built from your CV; rewrite them as you like.
+  highlights:
+    - title: Mass spectrometry imaging
+      text: >-
+        Extracting task-aware latent features and molecular disease drivers from MSI data
+        using variational autoencoders and Spatial Shrunken Centroids.
+      image: ../assets/images/poster.jpg
+      imageAlt: Sajjad presenting a poster on task-specific feature extraction from mass spectrometry imaging
+      href: /projects/msi-feature-extraction/
+    - title: Sharing the work
+      text: >-
+        Presenting at the Swedish Symposium on Image Analysis (SSBA), the eSSENCE conference,
+        and the Nordic Metabolomics Conference.
+      image: ../assets/images/talk.jpg
+      imageAlt: Sajjad giving a talk at an eSSENCE event at Uppsala University
+      href: /research/
+    - title: Uppsala University
+      text: >-
+        Researcher in the eSSENCE Research Program at the Image Analysis Division and the
+        Biomedical Center (BMC).
+      image: ../assets/images/portrait.jpg
+      imageAlt: Portrait of Sajjad Rahmani Dabbagh
+      href: /about/

@@ -1,0 +1,268 @@
+---
+// Site header: navigation, mobile menu, theme toggle.
+interface Props {
+  name: string;
+}
+const { name } = Astro.props;
+
+const nav = [
+  { href: '/about/', label: 'About' },
+  { href: '/research/', label: 'Research' },
+  { href: '/projects/', label: 'Projects' },
+  { href: '/experience/', label: 'Experience' },
+  { href: '/news/', label: 'News' },
+  { href: '/cv/', label: 'CV' },
+  { href: '/contact/', label: 'Contact' },
+];
+
+const path = Astro.url.pathname;
+const isActive = (href: string) => path === href || path.startsWith(href);
+---
+
+<header class="site-header" transition:persist="site-header">
+  <div class="container bar">
+    <a href="/" class="brand">{name}</a>
+
+    <nav aria-label="Main">
+      <button class="menu-btn" aria-expanded="false" aria-controls="nav-list">
+        <span class="sr-only">Menu</span>
+        <span class="menu-icon" aria-hidden="true"></span>
+      </button>
+      <ul id="nav-list" class="nav-list">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <button class="theme-btn" type="button" aria-label="Toggle dark mode">
+            <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+            <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  function initHeader() {
+    const header = document.querySelector<HTMLElement>('.site-header');
+    if (!header) return;
+    const btn = header.querySelector<HTMLButtonElement>('.menu-btn');
+    const themeBtn = header.querySelector<HTMLButtonElement>('.theme-btn');
+
+    // Update active link (header persists across page transitions).
+    const path = location.pathname;
+    header.querySelectorAll<HTMLAnchorElement>('.nav-list a').forEach((a) => {
+      const href = a.getAttribute('href') || '';
+      if (path.startsWith(href)) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+
+    // Close mobile menu after navigation.
+    header.classList.remove('open');
+    btn?.setAttribute('aria-expanded', 'false');
+
+    if (header.dataset.bound) return;
+    header.dataset.bound = '1';
+
+    btn?.addEventListener('click', () => {
+      const open = header.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(open));
+    });
+
+    themeBtn?.addEventListener('click', () => {
+      const root = document.documentElement;
+      const current =
+        root.getAttribute('data-theme') ||
+        (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      const next = current === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (e) {}
+    });
+
+    // Subtle shadow once the page is scrolled.
+    const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 8);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+  document.addEventListener('astro:page-load', initHeader);
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(160%) blur(14px);
+    -webkit-backdrop-filter: saturate(160%) blur(14px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s var(--ease);
+  }
+
+  .site-header:global(.scrolled) {
+    border-bottom-color: var(--line);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+  }
+
+  .brand {
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .nav-list {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-list a {
+    display: block;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.93rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+
+  .nav-list a:hover,
+  .nav-list a[aria-current='page'] {
+    color: var(--text);
+    background: var(--accent-soft);
+  }
+
+  .theme-btn,
+  .menu-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    margin-left: 0.4rem;
+  }
+
+  .theme-btn .moon {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) .theme-btn .sun {
+    display: none;
+  }
+  :global(:root[data-theme='dark']) .theme-btn .moon {
+    display: block;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .theme-btn .sun {
+      display: none;
+    }
+    :global(:root:not([data-theme='light'])) .theme-btn .moon {
+      display: block;
+    }
+  }
+
+  .menu-btn {
+    display: none;
+  }
+
+  .menu-icon,
+  .menu-icon::before,
+  .menu-icon::after {
+    display: block;
+    width: 16px;
+    height: 1.5px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
+  }
+
+  .menu-icon {
+    position: relative;
+  }
+
+  .menu-icon::before,
+  .menu-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+
+  .menu-icon::before {
+    top: -5px;
+  }
+  .menu-icon::after {
+    top: 5px;
+  }
+
+  @media (max-width: 860px) {
+    .menu-btn {
+      display: inline-grid;
+    }
+
+    .nav-list {
+      position: absolute;
+      top: 68px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 0.5rem var(--gutter) 1.25rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+    }
+
+    .site-header:global(.open) .nav-list {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .nav-list a {
+      padding: 0.8rem 0.5rem;
+      font-size: 1.05rem;
+      border-radius: 10px;
+    }
+
+    .theme-btn {
+      margin: 0.5rem 0 0 0.5rem;
+    }
+
+    .site-header:global(.open) .menu-icon {
+      background: transparent;
+    }
+    .site-header:global(.open) .menu-icon::before {
+      transform: translateY(5px) rotate(45deg);
+    }
+    .site-header:global(.open) .menu-icon::after {
+      transform: translateY(-5px) rotate(-45deg);
+    }
+  }
+</style>

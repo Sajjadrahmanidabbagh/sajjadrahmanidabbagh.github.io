@@ -1,0 +1,107 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EntryList from '../components/EntryList.astro';
+
+const me = (await getEntry('profile', 'me'))!.data;
+const education = (await getCollection('education')).map((e) => e.data);
+const skills = (await getCollection('skills')).map((e) => e.data);
+const languages = (await getCollection('languages')).map((e) => e.data);
+---
+
+<BaseLayout title="About" description={me.intro}>
+  <header class="page-header container">
+    <span class="eyebrow" data-reveal>About</span>
+    <h1 data-reveal style="--reveal-delay:80ms">{me.tagline}</h1>
+    <p class="lead" data-reveal style="--reveal-delay:160ms">{me.affiliation}</p>
+  </header>
+
+  {
+    me.aboutImage && (
+      <div class="banner" data-reveal>
+        <Image src={me.aboutImage} alt={me.aboutImageAlt ?? ''} widths={[800, 1400, 2000]} sizes="100vw" />
+      </div>
+    )
+  }
+
+  <section class="section container prose">
+    <p data-reveal>{me.summary}</p>
+  </section>
+
+  <section class="container">
+    <h2 data-reveal>Education</h2>
+    <EntryList items={education} />
+  </section>
+
+  <section class="section container two-col">
+    <div>
+      <h2 data-reveal>Skills</h2>
+      {
+        skills.map((s) => (
+          <div class="group" data-reveal>
+            <h3>{s.group}</h3>
+            <ul class="tags">{s.items.map((it) => <li>{it}</li>)}</ul>
+          </div>
+        ))
+      }
+    </div>
+    <div>
+      <h2 data-reveal>Languages</h2>
+      {
+        languages.map((l) => (
+          <div class="group" data-reveal>
+            <h3>{l.language}</h3>
+            <p class="muted">{l.level}</p>
+          </div>
+        ))
+      }
+      <h2 data-reveal class="mt">Interests</h2>
+      <ul class="interests" data-reveal>{me.interests.map((i) => <li>{i}</li>)}</ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .banner {
+    width: min(100% - 2 * var(--gutter), 1400px);
+    margin-inline: auto;
+    aspect-ratio: 21 / 9;
+    border-radius: calc(var(--radius) + 8px);
+    overflow: hidden;
+  }
+  .banner :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 6vw, 96px);
+  }
+  .group {
+    margin-bottom: 1.75rem;
+  }
+  .group p {
+    margin: 0;
+  }
+  .mt {
+    margin-top: 2.5rem;
+  }
+  .interests {
+    padding-left: 1.1rem;
+    color: var(--muted);
+  }
+  .interests li {
+    margin-bottom: 0.4rem;
+  }
+  @media (max-width: 760px) {
+    .two-col {
+      grid-template-columns: 1fr;
+    }
+    .banner {
+      aspect-ratio: 4 / 3;
+    }
+  }
+</style>

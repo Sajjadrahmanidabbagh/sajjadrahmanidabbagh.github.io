@@ -1,0 +1,54 @@
+---
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const me = (await getEntry('profile', 'me'))!.data;
+---
+
+<BaseLayout title="Contact" description={`Get in touch with ${me.name}.`}>
+  <section class="page-header container">
+    <span class="eyebrow" data-reveal>Contact</span>
+    <h1 data-reveal style="--reveal-delay:80ms">Get in touch</h1>
+    <p class="lead" data-reveal style="--reveal-delay:160ms">{me.affiliation} · {me.location}</p>
+
+    {
+      me.email && (
+        <p data-reveal style="--reveal-delay:240ms">
+          <a class="email" href={`mailto:${me.email}`}>{me.email}</a>
+        </p>
+      )
+    }
+
+    <ul class="links" data-reveal style="--reveal-delay:320ms">
+      {
+        me.links.map((l) => (
+          <li>
+            <a class="btn" href={l.url} target="_blank" rel="noopener noreferrer">
+              {l.label} <span aria-hidden="true">↗</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .email {
+    display: inline-block;
+    font-size: clamp(1.4rem, 4vw, 2.6rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    margin-block: 1.5rem;
+    word-break: break-word;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+</style>
