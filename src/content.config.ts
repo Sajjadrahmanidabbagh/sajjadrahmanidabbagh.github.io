@@ -18,6 +18,7 @@ const profile = defineCollection({
       email: z.string().optional(),
       links: z.array(link).default([]),
       intro: z.string(),
+      contactText: z.string().optional(),
       summary: z.string(),
       interests: z.array(z.string()).default([]),
       photo: image(),

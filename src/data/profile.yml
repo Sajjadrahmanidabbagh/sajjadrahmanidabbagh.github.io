@@ -15,6 +15,10 @@
       url: https://scholar.google.com/citations?hl=en&user=2ChYbTIAAAAJ
     - label: LinkedIn
       url: https://www.linkedin.com/in/sajjad-rahmani
+  # Short note shown on the Contact page.
+  contactText: >-
+    For more information about my projects and publications, please follow the links below.
+    I welcome enquiries and opportunities for collaboration; feel free to contact me by email.
   intro: >-
     My expertise lies at the intersection of biomedical image analysis and artificial
     intelligence (AI). I apply deep learning to biological datasets, such as mass spectrometry

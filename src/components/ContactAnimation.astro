@@ -1,27 +1,44 @@
 ---
 // Decorative background animation for the Contact page (pure SVG, no video, no libraries).
-// A central "inbox" hub sends envelopes to surrounding nodes and receives some back;
-// arrivals trigger a ripple and a notification badge. Paused for prefers-reduced-motion.
+// A central "inbox" hub exchanges envelopes with logo nodes (Email, LinkedIn, ...);
+// arrivals trigger a ripple and a notification badge. The node ring sways slowly.
+// Paused for prefers-reduced-motion.
+import { getContactIcon } from '../lib/icons';
+
+interface Props {
+  labels: string[]; // one logo node per label, e.g. ['Email', 'GitHub', 'Google Scholar', 'LinkedIn']
+}
+const { labels } = Astro.props;
 
 const hub = { x: 250, y: 250 };
 const PERIOD = 6; // seconds per message cycle (per channel)
 const TRAVEL = 0.4; // fraction of the cycle spent travelling
+const R = 172; // distance of logo nodes from the hub
+const NODE = 24; // logo node radius
+const SWAY = 9; // degrees the node ring sways back and forth
 
-// Peripheral nodes; "out" = hub sends to node, "in" = node sends to hub.
-const nodes = [
-  { x: 92, y: 118, cx: 120, cy: 230, dir: 'out' },
-  { x: 410, y: 92, cx: 360, cy: 150, dir: 'in' },
-  { x: 448, y: 318, cx: 330, cy: 330, dir: 'out' },
-  { x: 302, y: 446, cx: 320, cy: 340, dir: 'in' },
-  { x: 66, y: 372, cx: 150, cy: 300, dir: 'out' },
-].map((n, i) => ({
-  ...n,
-  id: `ca-path-${i}`,
-  d: `M${hub.x} ${hub.y} Q${n.cx} ${n.cy} ${n.x} ${n.y}`,
-  begin: `${(i * PERIOD) / 5}s`,
-}));
+const nodes = labels.map((label, i) => {
+  const angle = -125 + (i * 360) / labels.length;
+  const rad = (angle * Math.PI) / 180;
+  const x = hub.x + R * Math.cos(rad);
+  const y = hub.y + R * Math.sin(rad);
+  // Curve the link a little: control point offset perpendicular to the hub-node line.
+  const mx = (hub.x + x) / 2 - 0.25 * (y - hub.y);
+  const my = (hub.y + y) / 2 + 0.25 * (x - hub.x);
+  return {
+    label,
+    icon: getContactIcon(label),
+    x: +x.toFixed(1),
+    y: +y.toFixed(1),
+    id: `ca-path-${i}`,
+    d: `M${hub.x} ${hub.y} Q${mx.toFixed(1)} ${my.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`,
+    dir: i % 2 === 0 ? 'out' : 'in', // out = hub sends to node, in = node sends to hub
+    begin: `${(i * PERIOD) / labels.length}s`,
+  };
+});
 
 const kt = `0;${TRAVEL};1`;
+const swayDur = '26s';
 ---
 
 <div class="contact-anim" aria-hidden="true">
@@ -48,27 +65,106 @@ const kt = `0;${TRAVEL};1`;
     <!-- soft glow behind the hub -->
     <circle cx={hub.x} cy={hub.y} r="170" fill="url(#ca-glow)"></circle>
 
-    <!-- rotating orbit rings -->
-    <g class="ca-ring">
+    <!-- slowly rotating orbit rings -->
+    <g>
       <circle cx={hub.x} cy={hub.y} r="72" class="ca-orbit" stroke-dasharray="2 8"></circle>
       <circle cx={hub.x + 72} cy={hub.y} r="3" class="ca-sat"></circle>
-      <animateTransform attributeName="transform" type="rotate" from={`0 ${hub.x} ${hub.y}`} to={`360 ${hub.x} ${hub.y}`} dur="28s" repeatCount="indefinite"></animateTransform>
+      <animateTransform attributeName="transform" type="rotate" from={`0 ${hub.x} ${hub.y}`} to={`360 ${hub.x} ${hub.y}`} dur="70s" repeatCount="indefinite"></animateTransform>
     </g>
-    <g class="ca-ring">
+    <g>
       <circle cx={hub.x} cy={hub.y} r="118" class="ca-orbit faint" stroke-dasharray="14 10"></circle>
       <circle cx={hub.x} cy={hub.y - 118} r="2.5" class="ca-sat"></circle>
-      <animateTransform attributeName="transform" type="rotate" from={`360 ${hub.x} ${hub.y}`} to={`0 ${hub.x} ${hub.y}`} dur="46s" repeatCount="indefinite"></animateTransform>
+      <animateTransform attributeName="transform" type="rotate" from={`360 ${hub.x} ${hub.y}`} to={`0 ${hub.x} ${hub.y}`} dur="110s" repeatCount="indefinite"></animateTransform>
     </g>
-    <circle cx={hub.x} cy={hub.y} r="190" class="ca-orbit fainter"></circle>
+    <circle cx={hub.x} cy={hub.y} r={R} class="ca-orbit fainter"></circle>
 
-    <!-- connection lines with flowing dashes -->
-    {
-      nodes.map((n) => (
-        <use href={`#${n.id}`} class="ca-link">
-          <animate attributeName="stroke-dashoffset" from={n.dir === 'out' ? '40' : '0'} to={n.dir === 'out' ? '0' : '40'} dur="2.4s" repeatCount="indefinite" />
-        </use>
-      ))
-    }
+    <!-- node ring: links, envelopes and logo nodes sway slowly together around the hub -->
+    <g>
+      <animateTransform
+        attributeName="transform"
+        type="rotate"
+        values={`${-SWAY} ${hub.x} ${hub.y};${SWAY} ${hub.x} ${hub.y};${-SWAY} ${hub.x} ${hub.y}`}
+        dur={swayDur}
+        calcMode="spline"
+        keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+        repeatCount="indefinite"
+      ></animateTransform>
+
+      <!-- connection lines with flowing dashes -->
+      {
+        nodes.map((n) => (
+          <use href={`#${n.id}`} class="ca-link">
+            <animate attributeName="stroke-dashoffset" from={n.dir === 'out' ? '40' : '0'} to={n.dir === 'out' ? '0' : '40'} dur="2.4s" repeatCount="indefinite" />
+          </use>
+        ))
+      }
+
+      <!-- travelling envelopes -->
+      {
+        nodes.map((n) => (
+          <g class="ca-packet" opacity="0">
+            <rect x="-8" y="-5.5" width="16" height="11" rx="2" />
+            <path d="M-8 -4.5 L0 1.5 L8 -4.5" />
+            <animateMotion
+              dur={`${PERIOD}s`}
+              begin={n.begin}
+              repeatCount="indefinite"
+              calcMode="linear"
+              keyPoints={n.dir === 'out' ? '0;1;1' : '1;0;0'}
+              keyTimes={kt}
+            >
+              <mpath href={`#${n.id}`} />
+            </animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0;0" keyTimes={`0;0.04;${TRAVEL - 0.03};${TRAVEL};1`} dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
+          </g>
+        ))
+      }
+
+      <!-- logo nodes (kept upright while the ring sways) with ripple + notification badge -->
+      {
+        nodes.map((n) => (
+          <g transform={`translate(${n.x} ${n.y})`}>
+            <g>
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                values={`${SWAY};${-SWAY};${SWAY}`}
+                dur={swayDur}
+                calcMode="spline"
+                keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+                repeatCount="indefinite"
+              />
+              <circle r={NODE} class="ca-ripple" opacity="0">
+                {n.dir === 'out' ? (
+                  <>
+                    <animate attributeName="r" values={`${NODE};${NODE};${NODE + 24};${NODE + 24}`} keyTimes={`0;${TRAVEL};${TRAVEL + 0.25};1`} dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.7;0;0" keyTimes={`0;${TRAVEL};${TRAVEL + 0.25};1`} dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
+                  </>
+                ) : (
+                  <>
+                    <animate attributeName="r" values={`${NODE};${NODE + 24};${NODE + 24}`} keyTimes="0;0.25;1" dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.7;0;0" keyTimes="0;0.25;1" dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
+                  </>
+                )}
+              </circle>
+              <circle r={NODE} class="ca-node" />
+              <g transform="translate(-12 -12)" style={`color:${n.icon.color}`}>
+                {n.icon.stroke ? (
+                  <path d={n.icon.path} fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                ) : (
+                  <path d={n.icon.path} fill="currentColor" />
+                )}
+              </g>
+              {n.dir === 'out' && (
+                <circle cx={NODE * 0.72} cy={-NODE * 0.72} r="0" class="ca-badge">
+                  <animate attributeName="r" values="0;0;7;6;6;0;0" keyTimes={`0;${TRAVEL};${TRAVEL + 0.05};${TRAVEL + 0.08};0.88;0.93;1`} dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
+                </circle>
+              )}
+            </g>
+          </g>
+        ))
+      }
+    </g>
 
     <!-- hub: pulse rings + envelope -->
     <circle cx={hub.x} cy={hub.y} r="40" class="ca-pulse">
@@ -85,70 +181,15 @@ const kt = `0;${TRAVEL};1`;
       <path d="M-16 -9 L0 3 L16 -9"></path>
     </g>
 
-    <!-- peripheral nodes with ripple + notification badge -->
-    {
-      nodes.map((n) => (
-        <g transform={`translate(${n.x} ${n.y})`}>
-          <circle r="15" class="ca-ripple" opacity="0">
-            {n.dir === 'out' ? (
-              <>
-                <animate attributeName="r" values="15;15;40;40" keyTimes={`0;${TRAVEL};${TRAVEL + 0.25};1`} dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0;0.7;0;0" keyTimes={`0;${TRAVEL};${TRAVEL + 0.25};1`} dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
-              </>
-            ) : (
-              <>
-                <animate attributeName="r" values="15;40;40" keyTimes="0;0.25;1" dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.7;0;0" keyTimes="0;0.25;1" dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
-              </>
-            )}
-          </circle>
-          <circle r="15" class="ca-node" />
-          <circle r="5" class="ca-node-core" />
-          {n.dir === 'out' && (
-            <circle cx="12" cy="-12" r="0" class="ca-badge">
-              <animate attributeName="r" values="0;0;7;6;6;0;0" keyTimes={`0;${TRAVEL};${TRAVEL + 0.05};${TRAVEL + 0.08};0.88;0.93;1`} dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
-            </circle>
-          )}
-        </g>
-      ))
-    }
-
-    <!-- travelling envelopes -->
-    {
-      nodes.map((n) => (
-        <g class="ca-packet" opacity="0">
-          <rect x="-8" y="-5.5" width="16" height="11" rx="2" />
-          <path d="M-8 -4.5 L0 1.5 L8 -4.5" />
-          <animateMotion
-            dur={`${PERIOD}s`}
-            begin={n.begin}
-            repeatCount="indefinite"
-            calcMode="linear"
-            keyPoints={n.dir === 'out' ? '0;1;1' : '1;0;0'}
-            keyTimes={kt}
-          >
-            <mpath href={`#${n.id}`} />
-          </animateMotion>
-          <animate attributeName="opacity" values="0;1;1;0;0" keyTimes={`0;0.04;${TRAVEL - 0.03};${TRAVEL};1`} dur={`${PERIOD}s`} begin={n.begin} repeatCount="indefinite" />
-        </g>
-      ))
-    }
-
-    <!-- floating chat bubbles with typing dots -->
-    <g class="ca-bubble" transform="translate(372 196)">
-      <rect x="-30" y="-15" width="60" height="30" rx="15"></rect>
-      {[-12, 0, 12].map((dx, i) => (
-        <circle cx={dx} cy="0" r="3" class="ca-typing">
+    <!-- floating chat bubble with typing dots -->
+    <g class="ca-bubble" transform="translate(400 250)">
+      <rect x="-26" y="-13" width="52" height="26" rx="13"></rect>
+      {[-10, 0, 10].map((dx, i) => (
+        <circle cx={dx} cy="0" r="2.6" class="ca-typing">
           <animate attributeName="opacity" values="0.25;1;0.25" dur="1.2s" begin={`${i * 0.2}s`} repeatCount="indefinite" />
         </circle>
       ))}
-      <animateTransform attributeName="transform" type="translate" values="372 196;372 186;372 196" dur="5s" repeatCount="indefinite"></animateTransform>
-    </g>
-    <g class="ca-bubble" transform="translate(140 438)">
-      <rect x="-38" y="-13" width="76" height="26" rx="13"></rect>
-      <rect x="-26" y="-4" width="40" height="3" rx="1.5" class="ca-line"></rect>
-      <rect x="-26" y="3" width="26" height="3" rx="1.5" class="ca-line"></rect>
-      <animateTransform attributeName="transform" type="translate" values="140 438;140 446;140 438" dur="6.5s" repeatCount="indefinite"></animateTransform>
+      <animateTransform attributeName="transform" type="translate" values="400 250;400 240;400 250" dur="5s" repeatCount="indefinite"></animateTransform>
     </g>
   </svg>
 </div>
@@ -170,13 +211,13 @@ const kt = `0;${TRAVEL};1`;
 <style>
   .contact-anim {
     position: absolute;
-    top: 24px;
-    right: calc(var(--gutter) - 60px);
-    width: min(44vw, 560px);
+    top: 56px;
+    right: calc(var(--gutter) - 30px);
+    width: min(33vw, 420px);
     aspect-ratio: 1;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.9;
+    opacity: 0.92;
   }
   .ca-svg {
     width: 100%;
@@ -250,11 +291,7 @@ const kt = `0;${TRAVEL};1`;
     fill: var(--bg-elev);
     stroke: var(--accent);
     stroke-width: 1.2;
-    opacity: 0.9;
-  }
-  .ca-node-core {
-    fill: var(--accent);
-    opacity: 0.55;
+    filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--accent) 25%, transparent));
   }
   .ca-ripple {
     fill: none;
@@ -265,26 +302,22 @@ const kt = `0;${TRAVEL};1`;
     fill: #ff4d6d;
     filter: drop-shadow(0 0 4px rgba(255, 77, 109, 0.6));
   }
-  .ca-bubble > rect:first-child {
+  .ca-bubble > rect {
     fill: var(--bg-elev);
     stroke: var(--accent);
     stroke-width: 1;
     opacity: 0.85;
   }
-  .ca-typing,
-  .ca-line {
+  .ca-typing {
     fill: var(--accent);
-  }
-  .ca-line {
-    opacity: 0.5;
   }
 
   /* Smaller screens: sit faintly behind the content. */
   @media (max-width: 960px) {
     .contact-anim {
       top: 40px;
-      right: -25%;
-      width: 90vw;
+      right: -20%;
+      width: 80vw;
       opacity: 0.22;
     }
   }

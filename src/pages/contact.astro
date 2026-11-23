@@ -16,11 +16,11 @@ const contacts = [
 
 <BaseLayout title="Contact" description={`Get in touch with ${me.name}.`}>
   <section class="page-header container contact-page">
-    <ContactAnimation />
+    <ContactAnimation labels={contacts.map((c) => c.label)} />
     <BackButton />
     <span class="eyebrow" data-reveal>Contact</span>
     <h1 data-reveal style="--reveal-delay:80ms">Get in Touch</h1>
-    <p class="lead" data-reveal style="--reveal-delay:160ms">{me.affiliation} · {me.location}</p>
+    {me.contactText && <p class="lead" data-reveal style="--reveal-delay:160ms">{me.contactText}</p>}
 
     <ul class="contact-grid">
       {
@@ -49,6 +49,9 @@ const contacts = [
   .contact-page > :global(*:not(.contact-anim)) {
     position: relative;
     z-index: 1;
+  }
+  .contact-page .lead {
+    max-width: 50ch;
   }
   .contact-grid {
     display: grid;
