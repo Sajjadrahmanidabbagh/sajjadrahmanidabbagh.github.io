@@ -13,9 +13,8 @@
       url: https://github.com/Sajjadrahmanidabbagh
     - label: Google Scholar
       url: https://scholar.google.com/citations?hl=en&user=2ChYbTIAAAAJ
-    # TODO: add your LinkedIn URL (uncomment the two lines below)
-    # - label: LinkedIn
-    #   url: https://www.linkedin.com/in/<your-handle>/
+    - label: LinkedIn
+      url: https://www.linkedin.com/in/sajjad-rahmani
   intro: >-
     My expertise lies at the intersection of biomedical image analysis and artificial
     intelligence (AI). I apply deep learning to biological datasets, such as mass spectrometry
