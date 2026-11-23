@@ -1,0 +1,41 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { hasBody } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const items = await getCollection('education');
+  return items.map((item) => ({ params: { id: item.id }, props: { item } }));
+}
+
+const { item } = Astro.props;
+const { title, org, location, period, details } = item.data;
+const { Content } = await render(item);
+---
+
+<BaseLayout title={title} description={[title, org].filter(Boolean).join(' - ')}>
+  <article class="page-header container">
+    <span class="eyebrow" data-reveal>Education{period && ` · ${period}`}</span>
+    <h1 class="title" data-reveal style="--reveal-delay:80ms">{title}</h1>
+    <p class="lead" data-reveal style="--reveal-delay:160ms">{[org, location].filter(Boolean).join(' · ')}</p>
+    {details && <p class="muted" data-reveal style="--reveal-delay:200ms">{details}</p>}
+
+    <div class="section prose body" data-reveal>
+      {hasBody(item.body) ? <Content /> : <p class="muted">More details coming soon.</p>}
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .title {
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    max-width: 22ch;
+  }
+  .body {
+    padding-top: clamp(32px, 5vw, 64px);
+  }
+  .body :global(img) {
+    border-radius: 12px;
+    margin-block: 1rem;
+  }
+</style>

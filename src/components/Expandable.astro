@@ -1,0 +1,148 @@
+---
+// Expandable box: click the head to show details in place; "Show less" collapses it again.
+// variant "card" = project box (grid), "row" = thin full-width box (papers, talks).
+interface Props {
+  id: string;
+  variant?: 'card' | 'row';
+  index?: number;
+}
+const { id, variant = 'row', index = 0 } = Astro.props;
+---
+
+<article
+  class={`xp xp-${variant}`}
+  id={id}
+  data-xp
+  data-reveal
+  style={`--reveal-delay:${Math.min(index % 4, 3) * 80}ms`}
+>
+  <button type="button" class="xp-head" aria-expanded="false" aria-controls={`${id}-body`}>
+    <slot name="head" />
+    <span class="xp-more" aria-hidden="true">Show more <span class="chev">↓</span></span>
+  </button>
+  <div class="xp-body" id={`${id}-body`}>
+    <div class="xp-inner">
+      <div class="xp-content prose">
+        <slot />
+      </div>
+      <button type="button" class="btn xp-less">Show less <span aria-hidden="true">↑</span></button>
+    </div>
+  </div>
+</article>
+
+<script>
+  function initExpandables() {
+    document.querySelectorAll<HTMLElement>('[data-xp]:not([data-bound])').forEach((box) => {
+      box.dataset.bound = '1';
+      const head = box.querySelector<HTMLButtonElement>('.xp-head')!;
+      const inner = box.querySelector<HTMLElement>('.xp-inner')!;
+      const less = box.querySelector<HTMLButtonElement>('.xp-less')!;
+
+      const set = (open: boolean) => {
+        box.classList.toggle('open', open);
+        head.setAttribute('aria-expanded', String(open));
+        inner.inert = !open;
+      };
+      set(false);
+
+      head.addEventListener('click', () => set(!box.classList.contains('open')));
+      less.addEventListener('click', () => {
+        set(false);
+        const top = box.getBoundingClientRect().top;
+        if (top < 0) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        head.focus({ preventScroll: true });
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', initExpandables);
+</script>
+
+<style>
+  .xp {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    overflow: hidden;
+    scroll-margin-top: 88px;
+    transition:
+      box-shadow 0.4s var(--ease),
+      border-color 0.4s var(--ease),
+      opacity 0.9s var(--ease),
+      transform 0.9s var(--ease);
+  }
+  .xp:hover,
+  .xp.open {
+    box-shadow: var(--shadow);
+    border-color: transparent;
+  }
+
+  .xp-head {
+    all: unset;
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    text-align: left;
+  }
+  .xp-head:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    border-radius: var(--radius);
+  }
+
+  .xp-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    font-size: 0.82rem;
+    font-weight: 550;
+    color: var(--accent);
+  }
+  .chev {
+    display: inline-block;
+    transition: transform 0.4s var(--ease);
+  }
+  .xp.open .xp-more {
+    display: none;
+  }
+
+  /* Smooth height animation: grid rows 0fr -> 1fr. */
+  .xp-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.6s var(--ease);
+  }
+  .xp.open .xp-body,
+  :global(.no-js) .xp-body {
+    grid-template-rows: 1fr;
+  }
+  .xp-inner {
+    min-height: 0;
+    overflow: hidden;
+    padding-inline: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.5s var(--ease);
+  }
+  .xp.open .xp-inner,
+  :global(.no-js) .xp-inner {
+    opacity: 1;
+  }
+  .xp-content {
+    padding-top: 0.25rem;
+    max-width: 75ch;
+  }
+  .xp-content :global(img) {
+    border-radius: 12px;
+    margin-block: 1rem;
+  }
+  .xp-less {
+    margin: 0.5rem 0 1.5rem;
+    cursor: pointer;
+  }
+
+  /* Card variant (projects): opens to full grid width. */
+  .xp-card.open {
+    grid-column: 1 / -1;
+  }
+</style>

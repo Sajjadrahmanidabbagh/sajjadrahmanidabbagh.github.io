@@ -13,7 +13,9 @@
       url: https://github.com/Sajjadrahmanidabbagh
     - label: Google Scholar
       url: https://scholar.google.com/citations?hl=en&user=2ChYbTIAAAAJ
-    # TODO: add LinkedIn / ORCID / YouTube links if you want them shown.
+    # TODO: add your LinkedIn URL (uncomment the two lines below)
+    # - label: LinkedIn
+    #   url: https://www.linkedin.com/in/<your-handle>/
   intro: >-
     My expertise lies at the intersection of biomedical image analysis and artificial
     intelligence (AI). I apply deep learning to biological datasets, such as mass spectrometry
@@ -39,27 +41,3 @@
   photoAlt: Portrait of Sajjad Rahmani Dabbagh
   aboutImage: ../assets/images/talk.jpg
   aboutImageAlt: Sajjad Rahmani Dabbagh giving a talk at an eSSENCE event at Uppsala University
-  # Home-page scroll section: each item fades its image in as you scroll.
-  # TODO: these texts are placeholders built from your CV; rewrite them as you like.
-  highlights:
-    - title: Mass spectrometry imaging
-      text: >-
-        Extracting task-aware latent features and molecular disease drivers from MSI data
-        using variational autoencoders and Spatial Shrunken Centroids.
-      image: ../assets/images/poster.jpg
-      imageAlt: Sajjad presenting a poster on task-specific feature extraction from mass spectrometry imaging
-      href: /projects/msi-feature-extraction/
-    - title: Sharing the work
-      text: >-
-        Presenting at the Swedish Symposium on Image Analysis (SSBA), the eSSENCE conference,
-        and the Nordic Metabolomics Conference.
-      image: ../assets/images/talk.jpg
-      imageAlt: Sajjad giving a talk at an eSSENCE event at Uppsala University
-      href: /research/
-    - title: Uppsala University
-      text: >-
-        Researcher in the eSSENCE Research Program at the Image Analysis Division and the
-        Biomedical Center (BMC).
-      image: ../assets/images/portrait.jpg
-      imageAlt: Portrait of Sajjad Rahmani Dabbagh
-      href: /about/

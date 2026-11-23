@@ -12,7 +12,7 @@ Live URL: https://sajjadrahmanidabbagh.github.io
 - **Animations:** subtle only.
   - fade/slide-in on scroll: add `data-reveal` to any element
   - page transitions via Astro View Transitions (`<ClientRouter />`)
-  - scroll-driven image crossfade on the home page
+  - expandable boxes that open and close smoothly (projects, papers, talks)
   - hover effects
   - everything respects `prefers-reduced-motion`
   - no heavy animation libraries without asking
@@ -20,7 +20,8 @@ Live URL: https://sajjadrahmanidabbagh.github.io
 - **Images:** go in `src/assets/images/` and are optimized by `astro:assets`. Always give alt text.
 - **Quality:** must look good on mobile, be fast, and be accessible.
 - **Contact info:** email is shown. Phone number is NOT published.
-- **CV PDF:** not published until the owner confirms. To publish it, add `public/cv.pdf` and set `showPdf = true` in `src/pages/cv.astro`.
+- **CV PDF:** not published until the owner confirms. To publish it, add `public/cv.pdf` and set `showPdf = true` in `src/pages/about.astro`.
+- **Links:** links on About & CV and Contact open in a new tab. Projects, papers and talks expand in place (no separate pages).
 
 ## Content architecture: which file to edit
 
@@ -28,21 +29,41 @@ All personal content lives in `src/data/` and `src/content/`. Layouts and compon
 
 | Update | File |
 |---|---|
-| Name, title, tagline, bio, email, links, headshot, hobbies, home-page scroll highlights | `src/data/profile.yml` |
-| Education | `src/data/education.yml` |
+| Name, title, tagline, intro, summary, email, links (GitHub/LinkedIn/Scholar), photos, interests | `src/data/profile.yml` |
+| Education (one file each, own page at `/education/<filename>/`; write the explanation in the body) | `src/content/education/<name>.md` |
+| A project (box on Projects & Papers; body = expanded details) | `src/content/projects/<name>.md` |
+| A paper (thin box on Projects & Papers; body = expanded details) | `src/content/papers/<name>.md` |
+| A talk / poster (box on Experience & Talks; body = expanded details) | `src/content/talks/<name>.md` |
 | Work / teaching experience | `src/data/experience.yml` |
 | Honors & awards | `src/data/awards.yml` |
 | Certificates | `src/data/certificates.yml` |
 | Skills | `src/data/skills.yml` |
 | Languages | `src/data/languages.yml` |
-| Publications | `src/data/publications.yml` |
-| Conference talks / posters | `src/data/talks.yml` |
-| A project (one file = one detail page at `/projects/<filename>/`) | `src/content/projects/<name>.md` |
-| A news item | `src/content/news/<name>.md` |
-| Images | `src/assets/images/` (reference with a path relative to the file using it) |
-| Small videos | `public/videos/` |
+| Images | `src/assets/images/`. In a .md body: `![alt text](../../assets/images/<file>.jpg)` |
+| Small videos | `public/videos/`, then set `video: /videos/<file>.mp4` in the .md frontmatter |
+| YouTube video | set `youtubeId: <id>` in the .md frontmatter |
+| Extra links (code, data, …) | `links:` list in the .md frontmatter. Papers also have `url:` (DOI). |
 
-Pages: Home `/`, About `/about/`, Research `/research/`, Projects `/projects/` (+ detail pages), Experience `/experience/`, News `/news/`, CV `/cv/`, Contact `/contact/`.
+Items are sorted by the `order:` field in their frontmatter.
+
+### Pages (V2)
+
+- **Home** `/`: big photo, short intro, and three boxes (About & CV, Projects & Papers, Contact). It should fit one screen on desktop.
+- **About & CV** `/about/`:
+  - summary, profile links, education (each item opens its own page in a new tab)
+  - skills, languages, certificates, interests (not clickable)
+  - two summary boxes, each a single link opening in a new tab: Projects & Papers, and Experience, Awards & Talks
+- **Projects & Papers** `/projects/`: project boxes (2 per row) and paper rows. Clicking expands a box in place; "Show less" collapses it.
+- **Experience & Talks** `/experience/`: work experience, awards, and talk rows (expandable).
+- **Contact** `/contact/`: small boxes for email and each profile link, opening in a new tab.
+- A "Back to main page" button sits on About & CV, Projects & Papers, and Contact.
+- `src/components/ScrollCrossfade.astro` is kept for later use but is currently not used.
+
+### Versions
+
+- **V1** (first version) is frozen in the git tag `v1` (and branch `v1`). It never changes.
+- To restore V1 on the live site, run this on `master` and commit/push after approval:
+  `git rm -r -q . && git checkout v1 -- . && git commit -m "Restore V1"`
 
 ## Commands
 

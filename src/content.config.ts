@@ -22,17 +22,6 @@ const profile = defineCollection({
       interests: z.array(z.string()).default([]),
       photo: image(),
       photoAlt: z.string(),
-      highlights: z
-        .array(
-          z.object({
-            title: z.string(),
-            text: z.string(),
-            image: image(),
-            imageAlt: z.string(),
-            href: z.string().optional(),
-          }),
-        )
-        .default([]),
       aboutImage: image().optional(),
       aboutImageAlt: z.string().optional(),
     }),
@@ -46,7 +35,6 @@ const entry = z.object({
   details: z.string().optional(),
 });
 
-const education = defineCollection({ loader: file('src/data/education.yml'), schema: entry });
 const experience = defineCollection({ loader: file('src/data/experience.yml'), schema: entry });
 const awards = defineCollection({ loader: file('src/data/awards.yml'), schema: entry });
 const certificates = defineCollection({ loader: file('src/data/certificates.yml'), schema: entry });
@@ -61,29 +49,19 @@ const languages = defineCollection({
   schema: z.object({ language: z.string(), level: z.string() }),
 });
 
-const publications = defineCollection({
-  loader: file('src/data/publications.yml'),
-  schema: z.object({
-    title: z.string(),
-    authors: z.array(z.string()),
-    venue: z.string(),
-    publisher: z.string().optional(),
-    year: z.number().optional(),
-    url: z.string().optional(),
-    selected: z.boolean().default(false),
-  }),
+// One .md file per education entry; each gets its own page at /education/<filename>/.
+const education = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: 'src/content/education' }),
+  schema: entry.extend({ order: z.number().default(0) }),
 });
 
-const talks = defineCollection({
-  loader: file('src/data/talks.yml'),
-  schema: z.object({
-    event: z.string(),
-    place: z.string(),
-    year: z.number(),
-    type: z.string(),
-    title: z.string(),
-  }),
-});
+// Optional media shown when a project / paper / talk box is expanded.
+const media = {
+  youtubeId: z.string().optional(),
+  video: z.string().optional(), // small local video in public/videos/, e.g. /videos/clip.mp4
+  links: z.array(link).default([]),
+  order: z.number().default(0),
+};
 
 const projects = defineCollection({
   loader: glob({ pattern: '**/*.md', base: 'src/content/projects' }),
@@ -95,22 +73,33 @@ const projects = defineCollection({
       tags: z.array(z.string()).default([]),
       cover: image().optional(),
       coverAlt: z.string().optional(),
-      youtubeId: z.string().optional(),
-      links: z.array(link).default([]),
-      order: z.number().default(0),
+      ...media,
     }),
 });
 
-const news = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: 'src/content/news' }),
-  schema: ({ image }) =>
-    z.object({
-      title: z.string(),
-      year: z.number(),
-      order: z.number().default(0),
-      image: image().optional(),
-      imageAlt: z.string().optional(),
-    }),
+const papers = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: 'src/content/papers' }),
+  schema: z.object({
+    title: z.string(),
+    authors: z.array(z.string()),
+    venue: z.string(),
+    publisher: z.string().optional(),
+    year: z.number().optional(),
+    url: z.string().optional(),
+    ...media,
+  }),
+});
+
+const talks = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: 'src/content/talks' }),
+  schema: z.object({
+    title: z.string(),
+    event: z.string(),
+    place: z.string(),
+    year: z.number(),
+    type: z.string(),
+    ...media,
+  }),
 });
 
 export const collections = {
@@ -121,8 +110,7 @@ export const collections = {
   certificates,
   skills,
   languages,
-  publications,
-  talks,
   projects,
-  news,
+  papers,
+  talks,
 };

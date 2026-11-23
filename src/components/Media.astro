@@ -1,0 +1,49 @@
+---
+// Optional media for an expanded project / paper / talk: YouTube video, small local video, links.
+import YouTube from './YouTube.astro';
+
+interface Props {
+  title: string;
+  youtubeId?: string;
+  video?: string;
+  links?: { label: string; url: string }[];
+}
+const { title, youtubeId, video, links = [] } = Astro.props;
+---
+
+{youtubeId && <div class="media-item"><YouTube id={youtubeId} title={title} /></div>}
+{
+  video && (
+    <div class="media-item">
+      <video src={video} controls preload="none" playsinline aria-label={title} />
+    </div>
+  )
+}
+{
+  links.length > 0 && (
+    <p class="media-links">
+      {links.map((l) => (
+        <a class="btn" href={l.url} target="_blank" rel="noopener noreferrer">
+          {l.label} <span aria-hidden="true">↗</span>
+        </a>
+      ))}
+    </p>
+  )
+}
+
+<style>
+  .media-item {
+    margin-block: 1.5rem;
+  }
+  video {
+    width: 100%;
+    border-radius: var(--radius);
+    background: #000;
+  }
+  .media-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+</style>

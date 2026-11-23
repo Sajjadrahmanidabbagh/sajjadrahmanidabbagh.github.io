@@ -1,0 +1,30 @@
+---
+// Small "Back to main page" button shown at the top of inner pages.
+---
+
+<a href="/" class="back-btn" data-reveal>
+  <span aria-hidden="true">←</span> Back to main page
+</a>
+
+<style>
+  .back-btn {
+    display: flex;
+    width: max-content;
+    align-items: center;
+    gap: 0.45em;
+    margin-bottom: 1.75rem;
+    padding: 0.4em 0.95em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+    background: var(--bg-elev);
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.25s var(--ease);
+  }
+  .back-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: translateX(-2px);
+  }
+</style>

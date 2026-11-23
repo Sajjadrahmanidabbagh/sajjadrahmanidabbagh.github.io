@@ -2,19 +2,50 @@
 import { Image } from 'astro:assets';
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import EntryList from '../components/EntryList.astro';
+import BackButton from '../components/BackButton.astro';
 
 const me = (await getEntry('profile', 'me'))!.data;
-const education = (await getCollection('education')).map((e) => e.data);
+const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) => a.data.order - b.data.order;
+const education = (await getCollection('education')).sort(byOrder);
 const skills = (await getCollection('skills')).map((e) => e.data);
 const languages = (await getCollection('languages')).map((e) => e.data);
+const certificates = (await getCollection('certificates')).map((e) => e.data);
+const projects = (await getCollection('projects')).sort(byOrder);
+const papers = (await getCollection('papers')).sort(byOrder);
+const experience = (await getCollection('experience')).map((e) => e.data);
+const awards = (await getCollection('awards')).map((e) => e.data);
+const talks = (await getCollection('talks')).sort(byOrder);
+
+// TODO: CV PDF not published yet (waiting for your confirmation). To publish it, add public/cv.pdf
+// and set showPdf to true.
+const showPdf = false;
+
+// Links on this page open in a new tab so the reader keeps this page.
+const newTab = { target: '_blank', rel: 'noopener noreferrer' };
 ---
 
-<BaseLayout title="About" description={me.intro}>
+<BaseLayout title="About & CV" description={me.intro}>
   <header class="page-header container">
-    <span class="eyebrow" data-reveal>About</span>
-    <h1 data-reveal style="--reveal-delay:80ms">{me.tagline}</h1>
-    <p class="lead" data-reveal style="--reveal-delay:160ms">{me.affiliation}</p>
+    <BackButton />
+    <span class="eyebrow" data-reveal>About & CV</span>
+    <h1 data-reveal style="--reveal-delay:80ms">{me.name}</h1>
+    <p class="lead" data-reveal style="--reveal-delay:160ms">{me.title} · {me.affiliation}</p>
+    <div class="profile-links" data-reveal style="--reveal-delay:220ms">
+      {
+        me.links.map((l) => (
+          <a class="btn" href={l.url} {...newTab}>
+            {l.label} <span aria-hidden="true">↗</span>
+          </a>
+        ))
+      }
+      {
+        showPdf && (
+          <a class="btn btn-primary" href="/cv.pdf" {...newTab}>
+            CV (PDF) <span aria-hidden="true">↓</span>
+          </a>
+        )
+      }
+    </div>
   </header>
 
   {
@@ -25,16 +56,33 @@ const languages = (await getCollection('languages')).map((e) => e.data);
     )
   }
 
-  <section class="section container prose">
-    <p data-reveal>{me.summary}</p>
+  <section class="section container">
+    <h2 data-reveal>Summary</h2>
+    <p class="prose summary" data-reveal>{me.summary}</p>
   </section>
 
   <section class="container">
     <h2 data-reveal>Education</h2>
-    <EntryList items={education} />
+    <ol class="edu">
+      {
+        education.map((e, i) => (
+          <li data-reveal style={`--reveal-delay:${Math.min(i, 4) * 70}ms`}>
+            <a href={`/education/${e.id}/`} {...newTab}>
+              <span class="period muted">{e.data.period}</span>
+              <span class="edu-main">
+                <span class="edu-title">{e.data.title}</span>
+                <span class="muted">{[e.data.org, e.data.location].filter(Boolean).join(' · ')}</span>
+                {e.data.details && <span class="muted small">{e.data.details}</span>}
+              </span>
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
   </section>
 
-  <section class="section container two-col">
+  <section class="section container cols">
     <div>
       <h2 data-reveal>Skills</h2>
       {
@@ -45,6 +93,15 @@ const languages = (await getCollection('languages')).map((e) => e.data);
           </div>
         ))
       }
+      <h2 data-reveal class="mt">Certificates</h2>
+      {
+        certificates.map((c) => (
+          <div class="group" data-reveal>
+            <h3>{c.title}</h3>
+            <p class="muted small">{[c.org, c.period].filter(Boolean).join(' · ')}</p>
+          </div>
+        ))
+      }
     </div>
     <div>
       <h2 data-reveal>Languages</h2>
@@ -52,7 +109,7 @@ const languages = (await getCollection('languages')).map((e) => e.data);
         languages.map((l) => (
           <div class="group" data-reveal>
             <h3>{l.language}</h3>
-            <p class="muted">{l.level}</p>
+            <p class="muted small">{l.level}</p>
           </div>
         ))
       }
@@ -60,9 +117,41 @@ const languages = (await getCollection('languages')).map((e) => e.data);
       <ul class="interests" data-reveal>{me.interests.map((i) => <li>{i}</li>)}</ul>
     </div>
   </section>
+
+  <section class="container link-boxes">
+    <a href="/projects/" class="link-box" {...newTab} data-reveal>
+      <span class="lb-head">
+        <span class="lb-title">Projects & Papers</span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </span>
+      <span class="lb-label">Projects</span>
+      <ul>{projects.map((p) => <li>{p.data.title}</li>)}</ul>
+      <span class="lb-label">Papers</span>
+      <ul>{papers.map((p) => <li>{p.data.title} <span class="muted">· {p.data.venue}</span></li>)}</ul>
+    </a>
+
+    <a href="/experience/" class="link-box" {...newTab} data-reveal style="--reveal-delay:100ms">
+      <span class="lb-head">
+        <span class="lb-title">Experience, Awards & Talks</span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </span>
+      <span class="lb-label">Experience</span>
+      <ul>{experience.map((e) => <li>{e.title} <span class="muted">· {e.org}</span></li>)}</ul>
+      <span class="lb-label">Awards</span>
+      <ul>{awards.map((a) => <li>{a.title} <span class="muted">· {a.period}</span></li>)}</ul>
+      <span class="lb-label">Talks & posters</span>
+      <ul>{talks.map((t) => <li>{t.data.event} <span class="muted">· {t.data.year}</span></li>)}</ul>
+    </a>
+  </section>
 </BaseLayout>
 
 <style>
+  .profile-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
   .banner {
     width: min(100% - 2 * var(--gutter), 1400px);
     margin-inline: auto;
@@ -75,13 +164,66 @@ const languages = (await getCollection('languages')).map((e) => e.data);
     height: 100%;
     object-fit: cover;
   }
-  .two-col {
+  .summary {
+    font-size: 1.1rem;
+  }
+  .small {
+    font-size: 0.9rem;
+  }
+
+  .edu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .edu a {
+    position: relative;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1.5rem;
+    padding: 1.3rem 3rem 1.3rem 0;
+    border-top: 1px solid var(--line);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.3s var(--ease), padding 0.3s var(--ease);
+  }
+  .edu li:last-child a {
+    border-bottom: 1px solid var(--line);
+  }
+  .edu a:hover {
+    background: var(--accent-soft);
+    padding-left: 1rem;
+  }
+  .edu-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .edu-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  .period {
+    font-size: 0.9rem;
+    padding-top: 0.15rem;
+  }
+  .edu .arrow {
+    position: absolute;
+    right: 1rem;
+    top: 1.3rem;
+    color: var(--accent);
+  }
+
+  .cols {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: clamp(32px, 6vw, 96px);
   }
   .group {
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .group h3 {
+    margin-bottom: 0.3rem;
   }
   .group p {
     margin: 0;
@@ -96,12 +238,77 @@ const languages = (await getCollection('languages')).map((e) => e.data);
   .interests li {
     margin-bottom: 0.4rem;
   }
+
+  /* Each box is one link (opens in a new tab); items inside are not separately clickable. */
+  .link-boxes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+  .link-box {
+    display: flex;
+    flex-direction: column;
+    padding: 1.75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    text-decoration: none;
+    color: var(--text);
+    transition:
+      transform 0.4s var(--ease),
+      box-shadow 0.4s var(--ease),
+      border-color 0.4s var(--ease),
+      opacity 0.9s var(--ease);
+  }
+  .link-box:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .lb-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.75rem;
+  }
+  .lb-title {
+    font-size: 1.35rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .link-box .arrow {
+    color: var(--accent);
+    font-size: 1.2rem;
+  }
+  .lb-label {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .link-box ul {
+    margin: 0.4rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.93rem;
+  }
+  .link-box li {
+    margin-bottom: 0.3rem;
+  }
+
   @media (max-width: 760px) {
-    .two-col {
-      grid-template-columns: 1fr;
-    }
     .banner {
       aspect-ratio: 4 / 3;
+    }
+    .edu a {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+    .cols,
+    .link-boxes {
+      grid-template-columns: 1fr;
     }
   }
 </style>

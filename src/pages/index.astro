@@ -1,113 +1,153 @@
 ---
 import { Image } from 'astro:assets';
-import { getCollection, getEntry } from 'astro:content';
+import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ScrollCrossfade from '../components/ScrollCrossfade.astro';
-import ProjectCard from '../components/ProjectCard.astro';
-import NewsList from '../components/NewsList.astro';
 
 const me = (await getEntry('profile', 'me'))!.data;
-const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
-const news = (await getCollection('news'))
-  .sort((a, b) => b.data.year - a.data.year || a.data.order - b.data.order)
-  .slice(0, 3);
+
+const boxes = [
+  { href: '/about/', title: 'About & CV', text: 'Summary, education, skills, languages and more' },
+  { href: '/projects/', title: 'Projects & Papers', text: 'Research projects and publications' },
+  { href: '/contact/', title: 'Contact', text: 'Email and online profiles' },
+];
 ---
 
 <BaseLayout>
-  <section class="hero container">
-    <div class="hero-text">
-      <span class="eyebrow" data-reveal>{me.title} · {me.location}</span>
-      <h1 data-reveal style="--reveal-delay:80ms">{me.name}</h1>
-      <p class="tagline" data-reveal style="--reveal-delay:160ms">{me.tagline}</p>
-      <p class="lead" data-reveal style="--reveal-delay:240ms">{me.intro}</p>
-      <div class="actions" data-reveal style="--reveal-delay:320ms">
-        <a class="btn btn-primary" href="/research/">Research</a>
-        <a class="btn" href="/projects/">Projects</a>
-        <a class="btn" href="/contact/">Contact</a>
+  <div class="home container">
+    <section class="intro">
+      <div class="photo" data-reveal>
+        <Image
+          src={me.photo}
+          alt={me.photoAlt}
+          widths={[400, 700, 1000]}
+          sizes="(max-width: 760px) 70vw, 34vw"
+          loading="eager"
+          fetchpriority="high"
+        />
       </div>
-    </div>
-    <div class="hero-media" data-reveal style="--reveal-delay:120ms">
-      <Image
-        src={me.photo}
-        alt={me.photoAlt}
-        widths={[480, 800, 1200]}
-        sizes="(max-width: 860px) 100vw, 42vw"
-        loading="eager"
-        fetchpriority="high"
-      />
-    </div>
-  </section>
+      <div class="text">
+        <span class="eyebrow" data-reveal>{me.title} · {me.location}</span>
+        <h1 data-reveal style="--reveal-delay:80ms">{me.name}</h1>
+        <p class="tagline" data-reveal style="--reveal-delay:160ms">{me.tagline}</p>
+        <p class="lead" data-reveal style="--reveal-delay:240ms">{me.intro}</p>
+      </div>
+    </section>
 
-  {me.highlights.length > 0 && <div class="section"><ScrollCrossfade items={me.highlights} /></div>}
-
-  <section class="section container">
-    <div class="section-head" data-reveal>
-      <span class="eyebrow">Projects</span>
-      <h2>Selected work</h2>
-    </div>
-    <div class="grid">
-      {projects.map((p, i) => <ProjectCard project={p} index={i} />)}
-    </div>
-  </section>
-
-  <section class="container">
-    <div class="section-head" data-reveal>
-      <span class="eyebrow">News</span>
-      <h2>Latest updates</h2>
-    </div>
-    <NewsList items={news} />
-    <p data-reveal><a class="btn" href="/news/">All news <span aria-hidden="true">→</span></a></p>
-  </section>
+    <nav class="boxes" aria-label="Sections">
+      {
+        boxes.map((b, i) => (
+          <a href={b.href} class="box" data-reveal style={`--reveal-delay:${300 + i * 90}ms`}>
+            <span class="box-title">{b.title}</span>
+            <span class="box-text">{b.text}</span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        ))
+      }
+    </nav>
+  </div>
 </BaseLayout>
 
 <style>
-  .hero {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: clamp(32px, 6vw, 96px);
-    align-items: center;
-    min-height: calc(100vh - 68px);
-    padding-block: clamp(48px, 8vw, 96px);
-  }
-  .tagline {
-    font-size: clamp(1.2rem, 2.2vw, 1.55rem);
-    font-weight: 500;
-    margin-bottom: 1.25rem;
-  }
-  .actions {
+  /* Home fits in one screen on desktop: intro on top, three boxes below. */
+  .home {
+    min-height: calc(100svh - 68px);
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2rem;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(24px, 4vh, 48px);
+    padding-block: clamp(20px, 4vh, 48px);
   }
-  .hero-media {
+  .intro {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(28px, 5vw, 72px);
+    align-items: center;
+  }
+  .photo {
+    height: clamp(260px, 52vh, 560px);
+    aspect-ratio: 4 / 5;
     border-radius: calc(var(--radius) + 8px);
     overflow: hidden;
-    aspect-ratio: 4 / 5;
     box-shadow: var(--shadow);
   }
-  .hero-media :global(img) {
+  .photo :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  .section-head {
-    margin-bottom: 2.5rem;
+  h1 {
+    font-size: clamp(2.2rem, 5.2vw, 4.4rem);
   }
-  .grid {
+  .tagline {
+    font-size: clamp(1.1rem, 2vw, 1.45rem);
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  .lead {
+    margin: 0;
+  }
+
+  .boxes {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
   }
+  .box {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: clamp(1.1rem, 2.4vh, 1.75rem) 1.5rem;
+    padding-right: 3.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    text-decoration: none;
+    color: var(--text);
+    transition:
+      transform 0.4s var(--ease),
+      box-shadow 0.4s var(--ease),
+      border-color 0.4s var(--ease),
+      opacity 0.9s var(--ease);
+  }
+  .box:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .box-title {
+    font-size: clamp(1.15rem, 1.8vw, 1.4rem);
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .box-text {
+    font-size: 0.93rem;
+    color: var(--muted);
+  }
+  .arrow {
+    position: absolute;
+    right: 1.4rem;
+    top: 50%;
+    translate: 0 -50%;
+    font-size: 1.3rem;
+    color: var(--accent);
+    transition: transform 0.3s var(--ease);
+  }
+  .box:hover .arrow {
+    transform: translateX(4px);
+  }
+
   @media (max-width: 860px) {
-    .hero {
+    .intro {
       grid-template-columns: 1fr;
-      min-height: auto;
     }
-    .hero-media {
-      order: -1;
-      aspect-ratio: 1 / 1;
-      max-width: 420px;
+    .photo {
+      height: auto;
+      width: min(70vw, 340px);
+    }
+    .boxes {
+      grid-template-columns: 1fr;
     }
   }
 </style>

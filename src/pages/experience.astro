@@ -1,17 +1,24 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EntryList from '../components/EntryList.astro';
+import Expandable from '../components/Expandable.astro';
+import Media from '../components/Media.astro';
+import { hasBody } from '../lib/content';
 
 const experience = (await getCollection('experience')).map((e) => e.data);
 const awards = (await getCollection('awards')).map((e) => e.data);
-const certificates = (await getCollection('certificates')).map((e) => e.data);
+const talks = await Promise.all(
+  (await getCollection('talks'))
+    .sort((a, b) => a.data.order - b.data.order)
+    .map(async (t) => ({ t, Content: (await render(t)).Content })),
+);
 ---
 
-<BaseLayout title="Experience" description="Work experience, teaching, honors and certificates.">
+<BaseLayout title="Experience & Talks" description="Work experience, awards, talks and posters.">
   <header class="page-header container">
-    <span class="eyebrow" data-reveal>Experience</span>
-    <h1 data-reveal style="--reveal-delay:80ms">Work, teaching & awards</h1>
+    <span class="eyebrow" data-reveal>Experience & Talks</span>
+    <h1 data-reveal style="--reveal-delay:80ms">Experience, awards & talks</h1>
   </header>
 
   <section class="container">
@@ -25,7 +32,65 @@ const certificates = (await getCollection('certificates')).map((e) => e.data);
   </section>
 
   <section class="container">
-    <h2 data-reveal>Certificates</h2>
-    <EntryList items={certificates} />
+    <h2 data-reveal>Talks & posters</h2>
+    <div class="talk-list">
+      {
+        talks.map(({ t, Content }, i) => (
+          <Expandable id={`talk-${t.id}`} variant="row" index={i}>
+            <span slot="head" class="row-head">
+              <span class="meta">
+                <span class="year">{t.data.year}</span>
+                <span class="type">{t.data.type}</span>
+              </span>
+              <span class="item-title">“{t.data.title}”</span>
+              <span class="muted small">{t.data.event} · {t.data.place}</span>
+            </span>
+            {hasBody(t.body) ? <Content /> : <p class="muted">More details coming soon.</p>}
+            <Media title={t.data.title} youtubeId={t.data.youtubeId} video={t.data.video} links={t.data.links} />
+          </Expandable>
+        ))
+      }
+    </div>
   </section>
 </BaseLayout>
+
+<style>
+  .talk-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  .row-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1.1rem 1.5rem 0.4rem;
+  }
+  :global(.xp-row .xp-more) {
+    padding: 0 1.5rem 1rem;
+  }
+  .meta {
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+  }
+  .year {
+    font-weight: 650;
+    color: var(--accent);
+  }
+  .type {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  .item-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .small {
+    font-size: 0.93rem;
+  }
+</style>

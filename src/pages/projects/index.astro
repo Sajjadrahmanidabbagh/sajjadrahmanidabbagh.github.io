@@ -1,25 +1,186 @@
 ---
-import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ProjectCard from '../../components/ProjectCard.astro';
+import BackButton from '../../components/BackButton.astro';
+import Expandable from '../../components/Expandable.astro';
+import Media from '../../components/Media.astro';
+import { hasBody } from '../../lib/content';
 
-const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) => a.data.order - b.data.order;
+const withContent = async <T extends Parameters<typeof render>[0]>(items: T[]) =>
+  Promise.all(items.map(async (item) => ({ item, Content: (await render(item)).Content })));
+
+const projects = await withContent((await getCollection('projects')).sort(byOrder));
+const papers = await withContent((await getCollection('papers')).sort(byOrder));
+// Highlight the site owner's name in author lists.
+const ME = 'S. R. Dabbagh';
 ---
 
-<BaseLayout title="Projects" description="Research projects.">
+<BaseLayout title="Projects & Papers" description="Research projects and publications.">
   <header class="page-header container">
-    <span class="eyebrow" data-reveal>Projects</span>
-    <h1 data-reveal style="--reveal-delay:80ms">Research projects</h1>
+    <BackButton />
+    <span class="eyebrow" data-reveal>Projects & Papers</span>
+    <h1 data-reveal style="--reveal-delay:80ms">Research</h1>
   </header>
-  <section class="container grid">
-    {projects.map((p, i) => <ProjectCard project={p} index={i} />)}
+
+  <section class="container">
+    <h2 data-reveal>Projects</h2>
+    <div class="project-grid">
+      {
+        projects.map(({ item: p, Content }, i) => (
+          <Expandable id={`project-${p.id}`} variant="card" index={i}>
+            <span slot="head" class="card-head">
+              <span class="thumb">
+                {p.data.cover ? (
+                  <Image src={p.data.cover} alt={p.data.coverAlt ?? ''} widths={[400, 700, 1000]} sizes="(max-width: 760px) 100vw, 50vw" />
+                ) : (
+                  <span class="placeholder" aria-hidden="true" />
+                )}
+              </span>
+              <span class="card-text">
+                <span class="period muted">{p.data.period}</span>
+                <span class="item-title">{p.data.title}</span>
+                <span class="muted">{p.data.summary}</span>
+              </span>
+            </span>
+            {p.data.tags.length > 0 && <ul class="tags">{p.data.tags.map((t) => <li>{t}</li>)}</ul>}
+            {hasBody(p.body) ? <Content /> : <p class="muted">More details coming soon.</p>}
+            <Media title={p.data.title} youtubeId={p.data.youtubeId} video={p.data.video} links={p.data.links} />
+          </Expandable>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section container">
+    <h2 data-reveal>Papers</h2>
+    <div class="paper-list">
+      {
+        papers.map(({ item: p, Content }, i) => (
+          <Expandable id={`paper-${p.id}`} variant="row" index={i}>
+            <span slot="head" class="row-head">
+              <span class="item-title">{p.data.title}</span>
+              <span class="authors">
+                {p.data.authors.map((a, j) => (
+                  <>
+                    {a === ME ? <strong>{a}</strong> : a}
+                    {j < p.data.authors.length - 1 ? ', ' : ''}
+                  </>
+                ))}
+              </span>
+              <span class="venue muted">
+                <em>{p.data.venue}</em>
+                {p.data.publisher && ` · ${p.data.publisher}`}
+                {p.data.year && ` · ${p.data.year}`}
+              </span>
+            </span>
+            {hasBody(p.body) ? <Content /> : <p class="muted">More details coming soon.</p>}
+            <Media
+              title={p.data.title}
+              youtubeId={p.data.youtubeId}
+              video={p.data.video}
+              links={p.data.url ? [{ label: 'Read the paper', url: p.data.url }, ...p.data.links] : p.data.links}
+            />
+          </Expandable>
+        ))
+      }
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .grid {
+  .project-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .card-head {
+    display: flex;
+    flex-direction: column;
+  }
+  .thumb {
+    display: block;
+    aspect-ratio: 5 / 2;
+    overflow: hidden;
+    background: var(--accent-soft);
+  }
+  .thumb :global(img),
+  .placeholder {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s var(--ease);
+  }
+  .placeholder {
+    background:
+      radial-gradient(circle at 25% 30%, var(--accent-soft), transparent 60%),
+      linear-gradient(135deg, var(--accent-soft), transparent);
+  }
+  :global(.xp-card:hover) .thumb :global(img) {
+    transform: scale(1.04);
+  }
+  .card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1.25rem 1.5rem 0.5rem;
+  }
+  .card-head + :global(.xp-more),
+  :global(.xp-card .xp-more) {
+    padding: 0 1.5rem 1.25rem;
+  }
+  /* An opened project shows image and text side by side. */
+  :global(.xp-card.open) .card-head {
+    flex-direction: row;
+  }
+  :global(.xp-card.open) .thumb {
+    flex: 0 0 40%;
+    aspect-ratio: 16 / 10;
+  }
+  :global(.xp-card.open) .card-text {
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  .item-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .period {
+    font-size: 0.85rem;
+  }
+
+  .paper-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  .row-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1.1rem 1.5rem 0.4rem;
+  }
+  :global(.xp-row .xp-more) {
+    padding: 0 1.5rem 1rem;
+  }
+  .authors,
+  .venue {
+    font-size: 0.93rem;
+  }
+
+  @media (max-width: 760px) {
+    .project-grid {
+      grid-template-columns: 1fr;
+    }
+    :global(.xp-card.open) .card-head {
+      flex-direction: column;
+    }
   }
 </style>
